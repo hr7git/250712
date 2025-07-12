@@ -1,4 +1,4 @@
-# app.py
+# main.py
 import streamlit as st
 
 # 게임 상태 초기화 함수
