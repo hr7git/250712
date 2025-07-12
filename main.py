@@ -11,6 +11,8 @@ def initialize_game():
     st.session_state.last_word = ""
     st.session_state.game_over = False
     st.session_state.message = "게임을 시작합니다! 첫 단어를 입력해주세요."
+    # 입력 필드 초기화를 위한 키 카운터 추가
+    st.session_state.input_key_counter = 0 
 
 # Streamlit 앱의 메인 함수
 def main():
@@ -42,16 +44,16 @@ def main():
     else:
         st.write("첫 단어를 입력해주세요.")
 
-    # 사용자 입력 필드
-    user_input = st.text_input(
-        "단어를 입력하세요:",
-        key="word_input",
-        placeholder=f"'{st.session_state.last_word[-1]}'로 시작하는 단어" if st.session_state.last_word else "단어를 입력하세요"
-    )
-
     # 메시지 출력 영역
     message_placeholder = st.empty()
     message_placeholder.info(st.session_state.message)
+
+    # 사용자 입력 필드 - 동적 키를 사용하여 입력 후 초기화
+    user_input = st.text_input(
+        "단어를 입력하세요:",
+        key=f"word_input_{st.session_state.input_key_counter}", # 동적 키 사용
+        placeholder=f"'{st.session_state.last_word[-1]}'로 시작하는 단어" if st.session_state.last_word else "단어를 입력하세요"
+    )
 
     # 단어 제출 버튼
     if st.button("제출"):
@@ -90,8 +92,8 @@ def main():
         st.session_state.message = f"'{new_word}'가 성공적으로 추가되었습니다."
         message_placeholder.success(st.session_state.message)
         
-        # 입력 필드 초기화 (Streamlit의 text_input은 자동으로 초기화되지 않으므로, key를 사용하여 강제 초기화)
-        st.session_state.word_input = "" 
+        # 입력 필드를 초기화하기 위해 키 카운터 증가
+        st.session_state.input_key_counter += 1
         st.experimental_rerun() # 상태 업데이트 후 페이지 새로고침하여 UI 반영
 
     st.markdown("---")
