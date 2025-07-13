@@ -1,0 +1,13 @@
+symbol,name,currency,market,exchange,longName,quoteType
+SPY,SPDR S&P 500,USD,us_market,PCX,SPDR S&P 500 ETF,ETF
+IVV,iShares Core S&P 500 ETF,USD,us_market,PCX,iShares Core S&P 500 ETF,ETF
+VOO,Vanguard S&P 500 ETF,USD,us_market,PCX,Vanguard S&P 500 ETF,ETF
+QQQ,"Invesco QQQ Trust, Series 1",USD,us_market,NGM,Invesco QQQ Trust,ETF
+DIA,SPDR Dow Jones Industrial Avera,USD,us_market,PCX,SPDR Dow Jones Industrial Average ETF Trust,ETF
+GRN,iPath Series B Carbon Exchange-,USD,us_market,PCX,iPath Series B Carbon ETN,ETF
+VXUS,Vanguard Total International St,USD,us_market,NGM,Vanguard Total International Stock Index Fund ETF Shares,ETF
+VEA,Vanguard FTSE Developed Markets,USD,us_market,PCX,Vanguard FTSE Developed Markets Index Fund ETF Shares,ETF
+VWO,Vanguard FTSE Emerging Markets ,USD,us_market,PCX,Vanguard Emerging Markets Stock Index Fund,ETF
+GLD,SPDR Gold Trust,USD,us_market,PCX,SPDR Gold Shares,ETF
+SLV,iShares Silver Trust,USD,us_market,PCX,iShares Silver Trust,ETF
+BND,Vanguard Total Bond Market ETF,USD,us_market,NGM,Vanguard Total Bond Market Index Fund,ETF
