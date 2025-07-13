@@ -138,14 +138,22 @@ if 'all_data' in st.session_state:
     st.subheader("💾 데이터 다운로드")
     
     # 모든 데이터를 하나의 DataFrame으로 합치기
-    combined_data = pd.concat(st.session_state.all_data, ignore_index=True)
+    combined_data = pd.concat(st.session_state.all_data, ignore_index=False)
     combined_data = combined_data.reset_index()
     
-    # 날짜 컬럼 포맷팅
-    combined_data['Date'] = pd.to_datetime(combined_data['Date']).dt.strftime('%Y-%m-%d')
+    # 날짜 컬럼 이름 확인 및 변경
+    if 'Date' in combined_data.columns:
+        combined_data['Date'] = pd.to_datetime(combined_data['Date']).dt.strftime('%Y-%m-%d')
+    elif 'index' in combined_data.columns:
+        combined_data['Date'] = pd.to_datetime(combined_data['index']).dt.strftime('%Y-%m-%d')
+        combined_data = combined_data.drop('index', axis=1)
+    else:
+        # 인덱스가 날짜인 경우
+        combined_data['Date'] = pd.to_datetime(combined_data.index).strftime('%Y-%m-%d')
     
-    # 컬럼 순서 정렬
-    columns_order = ['Date', 'Symbol', 'Name', 'Open', 'High', 'Low', 'Close', 'Volume', 'Market_Cap']
+    # 컬럼 순서 정렬 (존재하는 컬럼만)
+    available_columns = ['Date', 'Symbol', 'Name', 'Open', 'High', 'Low', 'Close', 'Volume', 'Market_Cap']
+    columns_order = [col for col in available_columns if col in combined_data.columns]
     combined_data = combined_data[columns_order]
     
     # 데이터 미리보기
