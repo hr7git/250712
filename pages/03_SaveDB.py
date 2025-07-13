@@ -133,7 +133,7 @@ else:
     st.info("데이터베이스 파일이 없습니다. 위의 버튼을 눌러 생성하세요.")
     available_symbols = []
 
----
+#---
 
 ## 2. CSV Export Section
 
@@ -150,7 +150,7 @@ if not df_etfs_in_db.empty:
 else:
     st.warning("내보낼 데이터가 없습니다. 먼저 ETF 데이터를 업데이트하세요.")
 
----
+#---
 
 ## 3. ETF Returns Graphing Section (from previous code)
 
