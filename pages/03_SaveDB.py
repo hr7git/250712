@@ -6,25 +6,13 @@ import os
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
-# --- Configuration (same as before) ---
+# --- Configuration ---
 DATABASE_FILE = "etf_data.db"
-# A selection of broad market and sector-specific global ETFs.
 GLOBAL_ETFS = [
-    "SPY",  # SPDR S&P 500 ETF Trust (US Large Cap)
-    "IVV",  # iShares Core S&P 500 ETF (US Large Cap)
-    "VOO",  # Vanguard S&P 500 ETF (US Large Cap)
-    "QQQ",  # Invesco QQQ Trust (US Tech-heavy)
-    "DIA",  # SPDR Dow Jones Industrial Average ETF Trust (US Blue Chip)
-    "GRN",  # iShares Global Clean Energy ETF (Global Clean Energy)
-    "VXUS", # Vanguard Total International Stock Index Fund ETF (Ex-US Developed & Emerging Markets)
-    "VEA",  # Vanguard FTSE Developed Markets ETF (Developed Markets ex-US)
-    "VWO",  # Vanguard FTSE Emerging Markets ETF (Emerging Markets)
-    "GLD",  # SPDR Gold Shares (Gold) - often considered a global asset
-    "SLV",  # iShares Silver Trust (Silver) - often considered a global asset
-    "BND",  # Vanguard Total Bond Market ETF (US Bonds - for portfolio diversification example)
+    "SPY", "IVV", "VOO", "QQQ", "DIA", "GRN", "VXUS", "VEA", "VWO", "GLD", "SLV", "BND",
 ]
 
-# --- Database Functions (same as before) ---
+# --- Database Functions ---
 def create_table(conn):
     """Creates the etfs table if it doesn't exist."""
     cursor = conn.cursor()
@@ -73,11 +61,8 @@ def get_historical_data(symbol, period="10y"):
     """Fetches historical 'Close' price for a given symbol."""
     try:
         ticker = yf.Ticker(symbol)
-        # Fetch daily data for the last 10 years
         hist = ticker.history(period=period)
         if not hist.empty:
-            # Calculate cumulative returns
-            # (Current Price / Initial Price - 1) * 100
             initial_price = hist['Close'].iloc[0]
             hist['Cumulative Return (%)'] = ((hist['Close'] / initial_price) - 1) * 100
             return hist[['Close', 'Cumulative Return (%)']]
@@ -87,14 +72,14 @@ def get_historical_data(symbol, period="10y"):
         return pd.DataFrame()
 
 # --- Streamlit App ---
-st.set_page_config(layout="wide", page_title="Global ETF Returns Analysis")
+st.set_page_config(layout="wide", page_title="Global ETF Data & Analysis")
 
-st.title("📈 글로벌 ETF 수익률 비교")
-st.markdown("`yfinance`와 `Plotly`를 사용하여 선택한 ETF의 최근 10년 수익률을 비교합니다.")
+st.title("📈 글로벌 ETF 데이터 및 분석")
+st.markdown("`yfinance`를 사용하여 글로벌 주요 ETF 정보를 가져오고, SQLite 데이터베이스에 저장하며, 수익률을 분석하고, 데이터를 CSV로 내보냅니다.")
 
-# --- ETF Data Fetching/Display Section (from previous code) ---
-st.subheader("저장된 ETF 데이터")
-if st.button("ETF 데이터 업데이트 및 저장"):
+# --- ETF Data Fetching/Display Section ---
+st.subheader("저장된 ETF 데이터 관리")
+if st.button("ETF 데이터 업데이트 및 저장", key="update_db_button"):
     st.info("ETF 데이터를 가져와 데이터베이스에 저장 중입니다. 잠시만 기다려 주세요...")
 
     conn = sqlite3.connect(DATABASE_FILE)
@@ -148,27 +133,40 @@ else:
     st.info("데이터베이스 파일이 없습니다. 위의 버튼을 눌러 생성하세요.")
     available_symbols = []
 
-st.markdown("---")
+---
 
-# --- ETF Selection and Graphing Section ---
+## 2. CSV Export Section
+
+st.subheader("데이터베이스를 CSV로 내보내기")
+if not df_etfs_in_db.empty:
+    csv_data = df_etfs_in_db.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 ETF 데이터 CSV 다운로드",
+        data=csv_data,
+        file_name="etf_data.csv",
+        mime="text/csv",
+        help="현재 데이터베이스에 저장된 ETF 정보를 CSV 파일로 다운로드합니다."
+    )
+else:
+    st.warning("내보낼 데이터가 없습니다. 먼저 ETF 데이터를 업데이트하세요.")
+
+---
+
+## 3. ETF Returns Graphing Section (from previous code)
+
 st.subheader("ETF 수익률 그래프 그리기")
 
 if available_symbols:
-    # Allow user to select up to 3 ETFs
     selected_etfs = st.multiselect(
         "수익률을 비교할 ETF 3개를 선택하세요:",
         options=available_symbols,
-        default=available_symbols[:min(3, len(available_symbols))], # Default to first 3 if available
+        default=available_symbols[:min(3, len(available_symbols))],
         max_selections=3
     )
 
     if selected_etfs:
         st.info(f"선택된 ETF: {', '.join(selected_etfs)}")
         
-        # Calculate start date for 10 years ago
-        end_date = datetime.now()
-        start_date = end_date - timedelta(days=10*365) # Approx 10 years
-
         all_returns = pd.DataFrame()
 
         for etf_symbol in selected_etfs:
@@ -176,19 +174,16 @@ if available_symbols:
             df_hist = get_historical_data(etf_symbol, period="10y")
             
             if not df_hist.empty:
-                # Rename the cumulative return column for plotting
                 df_hist = df_hist.rename(columns={'Cumulative Return (%)': f'{etf_symbol} Cumulative Return (%)'})
                 
                 if all_returns.empty:
                     all_returns = df_hist[[f'{etf_symbol} Cumulative Return (%)']]
                 else:
-                    # Join on index (Date)
                     all_returns = all_returns.join(df_hist[[f'{etf_symbol} Cumulative Return (%)']], how='outer')
             else:
                 st.warning(f"⚠️ {etf_symbol}의 10년치 데이터를 가져올 수 없습니다. 다른 ETF를 선택하거나 나중에 다시 시도하세요.")
         
         if not all_returns.empty:
-            # Create Plotly figure
             fig = go.Figure()
 
             for col in all_returns.columns:
