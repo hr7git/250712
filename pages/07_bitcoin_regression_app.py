@@ -86,13 +86,20 @@ def calculate_technical_indicators(data):
     df['Price_Change'] = df['Close'].pct_change()
     df['Price_Change_7d'] = df['Close'].pct_change(periods=7)
     
-    # 거래량 지표 (안전한 처리)
+    # 거래량 지표 (매우 안전한 처리)
     df['Volume_MA'] = df['Volume'].rolling(window=21).mean()
-    # Volume_Ratio 계산을 더 안전하게 처리
-    volume_ma_safe = df['Volume_MA'].copy()
-    volume_ma_safe = volume_ma_safe.where(volume_ma_safe != 0, np.nan)
-    df['Volume_Ratio'] = df['Volume'] / volume_ma_safe
-    df['Volume_Ratio'] = df['Volume_Ratio'].fillna(1.0)
+    # Volume_Ratio를 조건부로 계산
+    try:
+        volume_ratio = []
+        for i in range(len(df)):
+            if pd.isna(df['Volume_MA'].iloc[i]) or df['Volume_MA'].iloc[i] == 0:
+                volume_ratio.append(1.0)
+            else:
+                volume_ratio.append(df['Volume'].iloc[i] / df['Volume_MA'].iloc[i])
+        df['Volume_Ratio'] = volume_ratio
+    except:
+        # 계산에 실패하면 모든 값을 1.0으로 설정
+        df['Volume_Ratio'] = 1.0
     
     # 무한대 값 처리
     df = df.replace([np.inf, -np.inf], np.nan)
