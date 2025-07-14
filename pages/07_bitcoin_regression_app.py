@@ -88,8 +88,11 @@ def calculate_technical_indicators(data):
     
     # 거래량 지표 (안전한 처리)
     df['Volume_MA'] = df['Volume'].rolling(window=21).mean()
-    df['Volume_Ratio'] = df['Volume'] / df['Volume_MA'].replace(0, np.nan)
-    df['Volume_Ratio'] = df['Volume_Ratio'].fillna(1.0)  # NaN 값을 1.0으로 대체
+    # Volume_Ratio 계산을 더 안전하게 처리
+    volume_ma_safe = df['Volume_MA'].copy()
+    volume_ma_safe = volume_ma_safe.where(volume_ma_safe != 0, np.nan)
+    df['Volume_Ratio'] = df['Volume'] / volume_ma_safe
+    df['Volume_Ratio'] = df['Volume_Ratio'].fillna(1.0)
     
     # 무한대 값 처리
     df = df.replace([np.inf, -np.inf], np.nan)
