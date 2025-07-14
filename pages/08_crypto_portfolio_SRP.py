@@ -7,7 +7,7 @@ from plotly.subplots import make_subplots
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# 페이지 설정
+# 페이지 설정.
 st.set_page_config(
     page_title="COVID-19 Impact on Cryptocurrency Portfolio Analysis",
     page_icon="₿",
