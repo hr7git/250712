@@ -101,10 +101,18 @@ def calculate_technical_indicators(data):
         # 계산에 실패하면 모든 값을 1.0으로 설정
         df['Volume_Ratio'] = 1.0
     
-    # 무한대 값 처리 (안전한 방법)
-    numeric_columns = df.select_dtypes(include=[np.number]).columns
-    for col in numeric_columns:
-        df[col] = df[col].replace([np.inf, -np.inf], np.nan)
+    # 무한대 값 처리 (매우 안전한 방법)
+    try:
+        numeric_columns = df.select_dtypes(include=[np.number]).columns
+        for col in numeric_columns:
+            df[col] = df[col].replace([np.inf, -np.inf], np.nan)
+    except:
+        # 개별 컬럼 처리
+        columns_to_check = ['MA_7', 'MA_21', 'MA_50', 'Volatility', 'RSI', 'BB_Upper', 'BB_Lower', 
+                           'Price_Change', 'Price_Change_7d', 'Volume_MA', 'Volume_Ratio']
+        for col in columns_to_check:
+            if col in df.columns:
+                df[col] = df[col].replace([np.inf, -np.inf], np.nan)
     
     return df
 
