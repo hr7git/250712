@@ -68,12 +68,15 @@ def calculate_technical_indicators(data):
     # 변동성
     df['Volatility'] = df['Close'].rolling(window=21).std()
     
-    # RSI
+    # RSI 계산 (안전한 처리)
     delta = df['Close'].diff()
     gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
     loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-    rs = gain / loss
+    
+    # 0으로 나누는 것을 방지
+    rs = gain / loss.replace(0, np.nan)
     df['RSI'] = 100 - (100 / (1 + rs))
+    df['RSI'] = df['RSI'].fillna(50)  # NaN 값을 50으로 대체
     
     # 볼린저 밴드
     df['BB_Upper'] = df['MA_21'] + (df['Volatility'] * 2)
@@ -83,9 +86,13 @@ def calculate_technical_indicators(data):
     df['Price_Change'] = df['Close'].pct_change()
     df['Price_Change_7d'] = df['Close'].pct_change(periods=7)
     
-    # 거래량 지표
+    # 거래량 지표 (안전한 처리)
     df['Volume_MA'] = df['Volume'].rolling(window=21).mean()
-    df['Volume_Ratio'] = df['Volume'] / df['Volume_MA']
+    df['Volume_Ratio'] = df['Volume'] / df['Volume_MA'].replace(0, np.nan)
+    df['Volume_Ratio'] = df['Volume_Ratio'].fillna(1.0)  # NaN 값을 1.0으로 대체
+    
+    # 무한대 값 처리
+    df = df.replace([np.inf, -np.inf], np.nan)
     
     return df
 
