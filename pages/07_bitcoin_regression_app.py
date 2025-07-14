@@ -128,21 +128,35 @@ if btc_data is not None:
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        current_price = btc_data['Close'].iloc[-1]
-        st.metric("현재 가격", f"${current_price:,.2f}")
+        try:
+            current_price = btc_data['Close'].dropna().iloc[-1]
+            st.metric("현재 가격", f"${current_price:,.2f}")
+        except:
+            st.metric("현재 가격", "데이터 없음")
     
     with col2:
-        price_change = btc_data['Close'].iloc[-1] - btc_data['Close'].iloc[-2]
-        change_pct = (price_change / btc_data['Close'].iloc[-2]) * 100
-        st.metric("일일 변화", f"${price_change:,.2f}", f"{change_pct:.2f}%")
+        try:
+            current_price = btc_data['Close'].dropna().iloc[-1]
+            prev_price = btc_data['Close'].dropna().iloc[-2]
+            price_change = current_price - prev_price
+            change_pct = (price_change / prev_price) * 100
+            st.metric("일일 변화", f"${price_change:,.2f}", f"{change_pct:.2f}%")
+        except:
+            st.metric("일일 변화", "데이터 없음")
     
     with col3:
-        volatility = btc_data['Volatility'].iloc[-1]
-        st.metric("변동성 (21일)", f"{volatility:.2f}")
+        try:
+            volatility = btc_data['Volatility'].dropna().iloc[-1]
+            st.metric("변동성 (21일)", f"{volatility:.2f}")
+        except:
+            st.metric("변동성 (21일)", "데이터 없음")
     
     with col4:
-        volume = btc_data['Volume'].iloc[-1]
-        st.metric("거래량", f"{volume:,.0f}")
+        try:
+            volume = btc_data['Volume'].dropna().iloc[-1]
+            st.metric("거래량", f"{volume:,.0f}")
+        except:
+            st.metric("거래량", "데이터 없음")
     
     st.markdown("---")
     
